@@ -1,7 +1,6 @@
 package main
 
 import (
-<<<<<<< HEAD
 	"crypto/sha256"
 	"fmt"
 )
@@ -44,16 +43,4 @@ func main() {
 	chain.addBlock("Second Block")
 	chain.addBlock("Third Block")
 	chain.listBlocks()
-=======
-	"fmt"
-
-	"github.com/ParkKyeongHwan/practiceCoin/person"
-)
-
-func main() {
-	nico := person.Person{}
-	nico.SetDetails("nico", 12)
-	fmt.Println("Main 'nico'", nico)
->>>>>>> 24cf20c5ee50a08d64f7659869962a884bbfcbda
-
 }
