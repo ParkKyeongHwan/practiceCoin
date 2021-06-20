@@ -1,5 +1,7 @@
 package person
 
+import "fmt"
+
 type Person struct {
 	name string
 	age  int
@@ -8,4 +10,5 @@ type Person struct {
 func (p Person) SetDetails(name string, age int) {
 	p.name = name
 	p.age = age
+	fmt.Println("See Details' nico'", p)
 }
