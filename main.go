@@ -1,5 +1,5 @@
 package main
 
 func main() {
-	nico := Person.Person()
+	nico := person.Person()
 }
