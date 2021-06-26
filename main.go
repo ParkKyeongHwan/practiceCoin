@@ -1,20 +1,26 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
+	"text/template"
 
 	"github.com/ParkKyeongHwan/practiceCoin/blockchain"
 )
 
-func main() {
-	chain := blockchain.GetBlockChain()
-	chain.AddBlock("Second Block")
-	chain.AddBlock("Third Block")
-	chain.AddBlock("Fourth Block")
+const port string = ":4000"
 
-	for _, block := range chain.AllBlcoks() {
-		fmt.Println(block.Data)
-		fmt.Println(block.Hash)
-		fmt.Println(block.PrevHash)
-	}
+type homeData struct {
+	PageTitle string
+	Blocks    []*blockchain.Block
+}
+
+func home(rw http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("templates/home.gohtml"))
+	data := homeData{"Home", blockchain.GetBlockChain().Blocks}
+	tmpl.Execute(rw, data)
+}
+
+func main() {
+	http.HandleFunc("/", home)
+	http.ListenAndServe(port, nil)
 }
