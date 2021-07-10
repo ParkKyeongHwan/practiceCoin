@@ -1,46 +1,53 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
-	"text/template"
-
-	"github.com/ParkKyeongHwan/practiceCoin/templates/blockchain"
 )
 
-const (
-	port        string = ":4000"
-	templateDir string = "templates/"
-)
+const port string = ":4000"
 
-var templates *template.Template
+type URL string
 
-type homeData struct {
-	PageTitle string
-	Blocks    []*blockchain.Block
+func (u URL) MarshalText() ([]byte, error) {
+	url := fmt.Sprintf("http://localhost%s%s", port, u)
+	return []byte(url), nil
 }
 
-func home(rw http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.GetBlockChain().Blocks}
-	templates.ExecuteTemplate(rw, "home", data)
+type URLDescription struct {
+	URL         URL    `json:"url"`
+	Method      string `json:"method"`
+	Description string `json:"description"`
+	Payload     string `json:"payload,omitempty"`
 }
 
-func add(rw http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		templates.ExecuteTemplate(rw, "add", nil)
-	case "POST":
-		r.ParseForm()
-		data := r.Form.Get("blockData")
-		blockchain.GetBlockChain().AddBlock(data)
-		http.Redirect(rw, r, "/", http.StatusPermanentRedirect)
+func documentation(rw http.ResponseWriter, r *http.Request) {
+	data := []URLDescription{
+		{
+			URL:         URL("/"),
+			Method:      "GET",
+			Description: "See Documetation",
+		},
+		{
+			URL:         URL("/block"),
+			Method:      "POST",
+			Description: "Add A Block",
+			Payload:     "data:string",
+		},
 	}
-	templates.ExecuteTemplate(rw, "add", nil)
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(data)
 }
 
 func main() {
-	templates = template.Must(template.ParseGlob(templateDir + "pages/*.gohtml"))
-	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.gohtml"))
-	http.HandleFunc("/", home)
-	http.HandleFunc("/add", add)
-	http.ListenAndServe(port, nil)
+	fmt.Println(URLDescription{
+		URL:         "/",
+		Method:      "GET",
+		Description: "See Documetation",
+	})
+	http.HandleFunc("/", documentation)
+	fmt.Printf("Listening on http://localhost%s\n", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }
