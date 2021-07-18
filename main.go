@@ -1,6 +1,7 @@
 package main
 
+import "github.com/ParkKyeongHwan/practiceCoin/rest"
+
 func main() {
-	rest.
-		rest.Start()
+	rest.Start()
 }
