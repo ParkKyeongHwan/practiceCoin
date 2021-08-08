@@ -1,7 +1,11 @@
 package main
 
-import "github.com/ParkKyeongHwan/practiceCoin/rest"
+import (
+	explorer "github.com/ParkKyeongHwan/practiceCoin/explorer/templates"
+	"github.com/ParkKyeongHwan/practiceCoin/rest"
+)
 
 func main() {
-	rest.Start()
+	go explorer.Start(3000)
+	rest.Start(4000)
 }

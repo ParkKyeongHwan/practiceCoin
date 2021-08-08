@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/ParkKyeongHwan/practiceCoin/explorer/templates/blockchain"
 	"github.com/ParkKyeongHwan/practiceCoin/utils"
+	"github.com/gorilla/mux"
 )
 
-const port string = ":4000"
-
 type url string
+
+var port string
 
 func (u url) MarshalText() ([]byte, error) {
 	url := fmt.Sprintf("http://localhost%s%s", port, u)
@@ -26,7 +28,7 @@ type urlDescription struct {
 	Payload     string `json:"payload,omitempty"`
 }
 
-type AddBlockBody struct {
+type addBlockBody struct {
 	Message string
 }
 
@@ -43,9 +45,22 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "Add A Block",
 			Payload:     "data:string",
 		},
+		{
+			URL:         url("/blocks/{height}"),
+			Method:      "GET",
+			Description: "See A Block",
+		},
 	}
 	rw.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(data)
+}
+
+func block(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["height"])
+	utils.HandleErr(err)
+	block := blockchain.GetBlockChain().GetBlock(id)
+	json.NewEncoder(rw).Encode(block)
 }
 
 func blocks(rw http.ResponseWriter, r *http.Request) {
@@ -54,16 +69,19 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(blockchain.GetBlockChain().AllBlcoks())
 	case "POST":
-		var addBlockBody AddBlockBody
-		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
-		blockchain.GetBlockChain().AddBlock((addBlockBody.Message))
+		var addBodyOfBlock addBlockBody
+		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBodyOfBlock))
+		blockchain.GetBlockChain().AddBlock((addBodyOfBlock.Message))
 		rw.WriteHeader(http.StatusCreated)
 	}
 }
 
-func Start() {
-	http.HandleFunc("/", documentation)
-	http.HandleFunc("/blocks", blocks)
-	fmt.Printf("Listening on http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, nil))
+func Start(aPort int) {
+	router := mux.NewRouter()
+	port = fmt.Sprintf(":%d", aPort)
+	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	router.HandleFunc("/blocks/{height:[0-9+]}", block).Methods("GET")
+	fmt.Printf("Listening on http://localhost:%s\n", port)
+	log.Fatal(http.ListenAndServe(port, router))
 }

@@ -1,4 +1,5 @@
-http://localhost:4000/
+http://localhost:3000/
+
 
 ###
 
@@ -10,3 +11,9 @@ POST  http://localhost:4000/blocks
 {
     "message": "Data for my block"
 }
+
+###
+http://localhost:4000/
+
+###
+http://localhost:4000/blocks/2

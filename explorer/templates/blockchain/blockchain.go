@@ -7,16 +7,17 @@ import (
 )
 
 type Block struct {
-	Data     string
-	Hash     string
-	PrevHash string
+	Data     string `json:"data"`
+	Hash     string `json:"hash"`
+	PrevHash string `json:"prevhash,omitempty"`
+	Height   int    `json:"height"`
 }
 
-type BlockChain struct {
+type blockChain struct {
 	Blocks []*Block
 }
 
-var b *BlockChain
+var b *blockChain
 var once sync.Once
 
 func getLashHash() string {
@@ -34,25 +35,29 @@ func (b *Block) calculateHash() {
 }
 
 func createBlock(data string) *Block {
-	newBlock := Block{data, "", getLashHash()}
+	newBlock := Block{data, "", getLashHash(), len(GetBlockChain().Blocks) + 1}
 	newBlock.calculateHash()
 	return &newBlock
 }
 
-func (b *BlockChain) AddBlock(data string) {
+func (b *blockChain) AddBlock(data string) {
 	b.Blocks = append(b.Blocks, createBlock(data))
 }
 
-func GetBlockChain() *BlockChain {
+func GetBlockChain() *blockChain {
 	if b == nil {
 		once.Do(func() {
-			b = &BlockChain{}
+			b = &blockChain{}
 			b.AddBlock("Genesis Block")
 		})
 	}
 	return b
 }
 
-func (b *BlockChain) AllBlcoks() []*Block {
+func (b *blockChain) AllBlcoks() []*Block {
 	return b.Blocks
+}
+
+func (b *blockChain) GetBlock(height int) *Block {
+	return b.Blocks[height-1]
 }
